@@ -8,7 +8,10 @@ export const StateContext = ({ children }) => {
   const [cartItems, setCartItems] = useState([]);
   const [totalPrice, setTotalPrice] = useState(0);
   const [totalQuantities, setTotalQuantities] = useState(0);
-  const [qty, setQty] = useState(1);
+  const [qty, setQty] = useState(1); 
+
+  let foundProduct; 
+  let index;
 
 
     const onAdd = (product, quantity) => { 
@@ -32,7 +35,35 @@ export const StateContext = ({ children }) => {
             setCartItems([...cartItems, {...product }]);
         }
         toast.success(`${qty} ${product.name} added to the cart.`)
+    } 
+
+  const onRemove = (product) => { 
+    foundProduct = cartItems.find((item) => item._id === product._id)  
+    const newCartItems = cartItems.filter((item) => item._id !== product._id)
+
+    setTotalPrice((prevTotalPrice) => prevTotalPrice - foundProduct.price * foundProduct.quantity) 
+    setTotalQuantities(prevTotalQuantities => prevTotalQuantities - foundProduct.quantity) 
+    setCartItems(newCartItems)
+
+  }
+
+  const toggleCartItemQuantity = (id, value) => { 
+    foundProduct = cartItems.find((item) => item._id === id) 
+    index = cartItems.findIndex((product) => product._id === id) 
+    const newCartItems = cartItems.filter((item) => item._id !== id)
+    
+    if (value === 'inc') { 
+        setCartItems([...newCartItems, {...foundProduct, quantity: foundProduct.quantity + 1}])
+        setTotalPrice((prevTotalPrice) => prevTotalPrice + foundProduct.price) 
+        setTotalQuantities(prevTotalQuantities => prevTotalQuantities +1)
+    } else if (value === 'dec') { 
+        if (foundProduct.quantity > 1){ 
+            setCartItems([...newCartItems, {...foundProduct, quantity: foundProduct.quantity - 1}])
+            setTotalPrice((prevTotalPrice) => prevTotalPrice - foundProduct.price) 
+            setTotalQuantities(prevTotalQuantities => prevTotalQuantities - 1)
+        }
     }
+  }
 
   const incQty = () => {
     setQty((prevQty) => prevQty + 1);
@@ -60,7 +91,9 @@ export const StateContext = ({ children }) => {
         onAdd, 
         setCartItems, 
         setTotalPrice, 
-        setTotalQuantities
+        setTotalQuantities, 
+        toggleCartItemQuantity, 
+        onRemove
       }}
     >
       {children}
